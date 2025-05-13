@@ -11,5 +11,6 @@ namespace RazorCms.Models
         public string Content { get; set; }
         public bool IsVisible { get; set; }
         public int OrderIndex { get; set; }
+        
     }
 }

@@ -9,5 +9,7 @@ namespace RazorCms.Data
             : base(options)
         {
         }
+
+        public DbSet<Models.Page> Pages { get; set; }
     }
 }

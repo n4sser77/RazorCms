@@ -1,0 +1,41 @@
+﻿@page
+@model RazorCms.Pages.Admin.CreatePageModel
+@{
+    // ViewData["Title"] = "Create Page";
+}
+
+
+<h2>Create page</h2>
+
+<form method="post">
+    <div class="form-group">
+
+        <label class="form-con" asp-for="Page.Title">Page title </label>
+        <input class="form-control" asp-for="Page.Title" type="text" value="@Model.Page.Title" />
+        <input asp-for="Page.Id" type="hidden" value="@Model.Page.Id" />
+        <label asp-for="Page.Slug">Page Slug</label>
+        <input class="form-control" asp-for="Page.Slug" type="text" value="@Model.Page.Title" />
+        <input asp-for="Page.OrderIndex" type="hidden" value="@Model.Page.OrderIndex" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Page.IsVisible">Hide</label>
+        <input class="form-control" asp-for="Page.IsVisible" type="checkbox" value="@Model.Page.IsVisible" />
+        <textarea id="summernote" asp-for="Page.Content" class="form-control" rows="50">
+            @Model.Page.Content
+        </textarea>
+    </div>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+</form>
+
+@section Scripts {
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.12/summernote.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.12/summernote.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#summernote').summernote();
+        });
+    </script>
+} 

@@ -1,11 +1,22 @@
 ﻿@page
 @model RazorCms.Pages.Admin.IndexModel
+@inject RazorCms.Data.ApplicationDbContext DbContext
+
 @{
     ViewData["Title"] = "Admin";
+    var pages = DbContext.Pages.OrderBy(p => p.OrderIndex).ToList();
 }
 
-﻿<h1>Control Panel</h1>
+<h1>Control Panel</h1>
 
 <ul>
-    <li><a asp-action="EditPage" asp-route-title="Home">Home</a></li>
+    @foreach (var page in pages)
+    {
+        <li>
+            <a asp-page="/Admin/EditPage" asp-route-id="@(page.Id)">@(page.Title)</a>
+            <a asp-page="/Admin/DeletePage" asp-route-id="@(page.Id)">Delete</a>
+        </li>
+    }
 </ul>
+
+<a asp-page="/Admin/CreatePage">Create New Page</a>

@@ -1,4 +1,5 @@
-﻿<!DOCTYPE html>
+﻿                        @inject RazorCms.Data.ApplicationDbContext DbContext
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -26,6 +27,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Privacy">Privacy</a>
                         </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" asp-area="" asp-page="Admin">Admin</a>
+                        </li>
+
+                        <ul>
+                            @foreach (var page in DbContext.Pages.Where(p => p.IsVisible).OrderBy(p => p.OrderIndex))
+                            {
+                                <li><a asp-page="/@(page.Slug)">@(page.Title)</a></li>
+                            }
+                        </ul>
+
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>
