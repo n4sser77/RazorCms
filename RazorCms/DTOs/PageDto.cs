@@ -1,23 +1,21 @@
-﻿
+﻿using System.Text.Json.Serialization;
 
-using System.Text.Json.Serialization;
-
-namespace RazorCms.Models
+namespace RazorCms.DTOs
 {
-    public class Page
+    public class PageDto
     {
-
 
         public int? Id { get; set; }
         [JsonPropertyName("title")]
         public string Title { get; set; }
         public string Slug { get; set; }
         [JsonPropertyName("blocks")]
-        public string Content { get; set; }
+        public List<Block> Blocks { get; set; }
         [JsonPropertyName("isVisible")]
         public bool IsVisible { get; set; }
         [JsonPropertyName("order")]
         public int OrderIndex { get; set; }
 
     }
+
 }
