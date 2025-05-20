@@ -15,20 +15,20 @@ namespace RazorCms.Pages.Admin
 
         [BindProperty]
         public Models.Page Page { get; set; } = new Models.Page();
-        public void OnGet()
-        {
+        //public async Task<IActionResult> OnGetAsync()
+        //{
 
-        }
+        //}
 
-        public IActionResult OnPost()
+        public async Task<IActionResult> OnPostAsync()
         {
             Page.Slug = Page.Title.ToLower().Replace(" ", "-");
 
-            
+
             if (!ModelState.IsValid)
                 return Page();
 
-            _dbContext.Pages.Add(Page);
+            await _dbContext.Pages.AddAsync(Page);
             _dbContext.SaveChanges();
             return RedirectToPage("/Admin/Index");
         }

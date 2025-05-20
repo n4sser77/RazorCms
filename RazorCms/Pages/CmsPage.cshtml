@@ -1,0 +1,38 @@
+﻿@page
+@model RazorCms.Pages.CmsPageModel
+@{
+
+    var title = Model?.Page.Title ?? "Page Not Found";
+
+    ViewData["Title"] = title;
+}
+
+@if (Model?.Page == null)
+{
+    <h1>Page Not Found</h1>
+}
+
+@if (Model.Blocks == null && Model.Blocks.Count > 0)
+{
+    <div class="mb-3">
+        <h4>Page is empty</h4>
+    </div>
+}
+
+@foreach (var block in Model?.Blocks)
+{
+    if (block.Type == "Text")
+    {
+        <div class="mb-2 p-2 border">
+            <p>@block.Text</p>
+        </div>
+    }
+    else if (block.Type == "header")
+    {
+        <h2 class="mb-2 p-2 border">@block.Text</h2>
+    }
+    else if (block.Type == "image")
+    {
+        <img src="@block.Url" alt="Image" class="img-fluid mb-2" />
+    }
+}

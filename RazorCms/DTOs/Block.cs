@@ -1,9 +1,15 @@
-﻿namespace RazorCms.DTOs;
+﻿using System.Text.Json.Serialization;
+
+namespace RazorCms.DTOs;
 public class Block
 {
-    public string type { get; set; }
-    public int order { get; set; }
-    public string? text { get; set; }
-    public string? url { get; set; }
+    [JsonPropertyName("type")]
+    public string Type { get; set; }
+    [JsonPropertyName("order")]
+    public int Order { get; set; }
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 }
 

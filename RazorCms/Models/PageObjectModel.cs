@@ -16,7 +16,7 @@ namespace RazorCms.Models
         public string Content { get; set; }
         [JsonPropertyName("isVisible")]
         public bool IsVisible { get; set; }
-        [JsonPropertyName("order")]
+        [JsonPropertyName("Order")]
         public int OrderIndex { get; set; }
 
     }

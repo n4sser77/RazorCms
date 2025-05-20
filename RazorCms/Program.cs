@@ -51,29 +51,38 @@ app.MapRazorPages()
 app.MapGet("/api/pages/", () =>
  "Hello pages!");
 
-app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto page, ApplicationDbContext db) =>
+app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, ApplicationDbContext db) =>
 {
-    if (page == null)
+    if (pageDto == null)
         return Results.BadRequest("Page cannot be null");
 
-    if (string.IsNullOrEmpty(page.Title))
+    if (string.IsNullOrEmpty(pageDto.Title))
         return Results.BadRequest("Page title cannot be empty");
 
-    if (string.IsNullOrEmpty(page.Slug))
+    if (string.IsNullOrEmpty(pageDto.Slug))
         return Results.BadRequest("Page slug cannot be empty");
 
-    if (page.Blocks.Count < 1)
+    if (pageDto.Blocks.Count < 1)
         return Results.BadRequest("Page content cannot be empty");
     /*
-     *   Create a new page object port the dto to the object
-     *   serilize the blocks list to json then assign it to the page content 
+     *   Create a new pageDto object port the dto to the object
+     *   serilize the blocks list to json then assign it to the pageDto content 
      *   finally save to db
      */
 
+    var page = new RazorCms.Models.Page()
+    {
+        Title = pageDto.Title,
+        Slug = pageDto.Slug,
+        IsVisible = pageDto.IsVisible,
+        OrderIndex = pageDto.OrderIndex,
+        Content = System.Text.Json.JsonSerializer.Serialize(pageDto.Blocks),
 
-    //db.Add(page);
-    //await db.SaveChangesAsync();
-    return Results.Created($"/api/pages/{page.Id}", page);
+    };
+
+    db.Add(page);
+    await db.SaveChangesAsync();
+    return Results.Created($"/api/pages/{page.Id}", pageDto);
 });
 
 app.Run();
