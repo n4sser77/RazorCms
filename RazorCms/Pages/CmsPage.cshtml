@@ -21,7 +21,9 @@
 
 @foreach (var block in Model?.Blocks)
 {
-    if (block.Type == "Text")
+
+
+    if (block.Type == "text")
     {
         <div class="mb-2 p-2 border">
             <p>@block.Text</p>

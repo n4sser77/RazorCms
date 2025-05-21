@@ -32,12 +32,14 @@
                             <a class="nav-link text-dark" asp-area="" asp-page="/Admin/Index">Admin</a>
                         </li>
 
-                        <ul>
-                            @foreach (var page in DbContext.Pages.Where(p => p.IsVisible).OrderBy(p => p.OrderIndex))
+                        
+                            @foreach (var page in DbContext.Pages.Where(p => !p.IsHidden).OrderBy(p => p.OrderIndex))
                             {
-                                <li><a asp-page="/@(page.Slug)">@(page.Title)</a></li>
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-page="/CmsPage" asp-route-Id="@(page.Id)">@(page.Title)</a>
+                                    </li>
                             }
-                        </ul>
+                        
 
                     </ul>
                     <partial name="_LoginPartial" />

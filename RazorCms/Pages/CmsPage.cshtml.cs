@@ -31,7 +31,21 @@ namespace RazorCms.Pages
 
 
             this.Page = page;
-            var blocks = JsonSerializer.Deserialize<List<Block>>(page.Content);
+            List<Block> blocks = new List<Block>();
+            if (!string.IsNullOrEmpty(page.Content))
+            {
+                try
+                {
+
+                    blocks = JsonSerializer.Deserialize<List<Block>>(page.Content);
+                }
+                catch (Exception e)
+                {
+                    
+                    
+                }
+            }
+
             if (blocks == null)
             {
                 Blocks = new List<Block>();

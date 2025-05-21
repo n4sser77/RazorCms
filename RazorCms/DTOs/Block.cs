@@ -6,6 +6,7 @@ public class Block
     [JsonPropertyName("type")]
     public string Type { get; set; }
     [JsonPropertyName("order")]
+
     public int Order { get; set; }
     [JsonPropertyName("text")]
     public string? Text { get; set; }

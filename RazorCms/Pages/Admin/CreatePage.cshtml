@@ -13,8 +13,8 @@
     <label asp-for="Page.Slug">Page Slug</label>
     <input class="form-control" id="page-slug" type="text" value="@Model.Page.Slug" />
 
-    <label asp-for="Page.IsVisible">Hide</label>
-    <input id="page-visible" type="checkbox" @(Model.Page.IsVisible ? "checked" : "") />
+    <label asp-for="Page.IsHidden">Hide</label>
+    <input id="page-visible" type="checkbox" @(Model.Page.IsHidden ? "checked" : "") />
 </div>
 
 <hr />

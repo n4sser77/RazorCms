@@ -4,7 +4,7 @@ using RazorCms.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+
 // Add services to the container.
 builder.Services.AddCors(options =>
 {
@@ -15,6 +15,16 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader();
     });
 });
+
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Identity/Account/Login"; // Redirect to login page
+    });
+
+builder.Services.AddAuthorization();
+
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -42,6 +52,7 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 app.UseCors();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
@@ -74,7 +85,7 @@ app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, Applicatio
     {
         Title = pageDto.Title,
         Slug = pageDto.Slug,
-        IsVisible = pageDto.IsVisible,
+        IsHidden = pageDto.IsHidden,
         OrderIndex = pageDto.OrderIndex,
         Content = System.Text.Json.JsonSerializer.Serialize(pageDto.Blocks),
 

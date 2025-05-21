@@ -19,7 +19,7 @@ namespace RazorCms.Data.Migrations
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Slug = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsVisible = table.Column<bool>(type: "bit", nullable: false),
+                    IsHidden = table.Column<bool>(type: "bit", nullable: false),
                     OrderIndex = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>

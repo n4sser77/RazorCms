@@ -234,13 +234,16 @@ namespace RazorCms.Data.Migrations
 
                     b.Property<string>("Content")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "blocks");
 
-                    b.Property<bool>("IsVisible")
-                        .HasColumnType("bit");
+                    b.Property<bool>("IsHidden")
+                        .HasColumnType("bit")
+                        .HasAnnotation("Relational:JsonPropertyName", "isHidden");
 
                     b.Property<int>("OrderIndex")
-                        .HasColumnType("int");
+                        .HasColumnType("int")
+                        .HasAnnotation("Relational:JsonPropertyName", "Order");
 
                     b.Property<string>("Slug")
                         .IsRequired()
@@ -248,7 +251,13 @@ namespace RazorCms.Data.Migrations
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "title");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasAnnotation("Relational:JsonPropertyName", "userId");
 
                     b.HasKey("Id");
 

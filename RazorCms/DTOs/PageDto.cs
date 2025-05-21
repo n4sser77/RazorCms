@@ -11,8 +11,8 @@ namespace RazorCms.DTOs
         public string Slug { get; set; }
         [JsonPropertyName("blocks")]
         public List<Block> Blocks { get; set; }
-        [JsonPropertyName("isVisible")]
-        public bool IsVisible { get; set; }
+        [JsonPropertyName("isHidden")]
+        public bool IsHidden { get; set; }
         [JsonPropertyName("Order")]
         public int OrderIndex { get; set; }
 
