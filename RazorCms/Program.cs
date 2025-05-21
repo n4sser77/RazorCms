@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+
 using RazorCms.Data;
+using RazorCms.DTOs;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,12 +78,7 @@ app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, Applicatio
 
     if (pageDto.Blocks.Count < 1)
         return Results.BadRequest("Page content cannot be empty");
-    /*
-     *   Create a new pageDto object port the dto to the object
-     *   serilize the blocks list to json then assign it to the pageDto content 
-     *   finally save to db
-     */
-
+    
     var page = new RazorCms.Models.Page()
     {
         Title = pageDto.Title,
@@ -88,12 +86,61 @@ app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, Applicatio
         IsHidden = pageDto.IsHidden,
         OrderIndex = pageDto.OrderIndex,
         Content = System.Text.Json.JsonSerializer.Serialize(pageDto.Blocks),
+        UserId = pageDto.UserId
 
     };
 
     db.Add(page);
     await db.SaveChangesAsync();
     return Results.Created($"/api/pages/{page.Id}", pageDto);
+});
+
+app.MapPut("/api/pages/save/", async (RazorCms.DTOs.BatchUpdateDto batchUpdateDto, ApplicationDbContext db) =>
+{
+
+    var page = await db.Pages.FindAsync(batchUpdateDto.PageId);
+    if (page == null)
+    {
+        return Results.NotFound("Page not found");
+    }
+    List<Block> blocks;
+    try
+    {
+        blocks = JsonSerializer.Deserialize<List<Block>>(page.Content);
+
+    }
+    catch (Exception e)
+    {
+        blocks = new List<Block>();
+    }
+
+
+    foreach (var editedBlock in batchUpdateDto.EditedBlocks)
+    {
+        var blockToUpdate = blocks.FirstOrDefault(b => b.Id == editedBlock.Id);
+        if (blockToUpdate != null)
+        {
+            blockToUpdate.Text = editedBlock.Text;
+            blockToUpdate.Type = editedBlock.Type;
+            blockToUpdate.Url = editedBlock.Url;
+            blockToUpdate.Order = editedBlock.Order;
+
+        }
+
+    }
+    foreach(var deletedBlockId in batchUpdateDto.DeletedBlockIds)
+    {
+        var blockToDelete = blocks.FirstOrDefault(b => b.Id == deletedBlockId);
+        if (blockToDelete != null)
+        {
+            blocks.Remove(blockToDelete);
+        }
+    }
+
+    var jsonContent = JsonSerializer.Serialize<List<Block>>(blocks);
+    page.Content = jsonContent;
+    await db.SaveChangesAsync();
+    return Results.Ok("Page updated successfully");
 });
 
 app.Run();

@@ -15,6 +15,7 @@
 
     <label asp-for="Page.IsHidden">Hide</label>
     <input id="page-visible" type="checkbox" @(Model.Page.IsHidden ? "checked" : "") />
+    <input id="userId" value="@Model.UserId" type="hidden" />
 </div>
 
 <hr />
@@ -137,7 +138,8 @@
                 blocks: Array.from(editor.children).map(child => {
                     const order = parseInt(child.dataset.order);
                     return blocks.find(b => b.order == order);
-                })
+                }),
+                userId: document.getElementById('userId').value
             };
 
             const res = await fetch('https://localhost:7170/api/pages/save/', {

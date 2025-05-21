@@ -3,6 +3,9 @@
 namespace RazorCms.DTOs;
 public class Block
 {
+    [JsonPropertyName("id")]
+    public string Id { get; set; }
+
     [JsonPropertyName("type")]
     public string Type { get; set; }
     [JsonPropertyName("order")]

@@ -15,6 +15,7 @@ namespace RazorCms.DTOs
         public bool IsHidden { get; set; }
         [JsonPropertyName("Order")]
         public int OrderIndex { get; set; }
+        public string UserId { get; set; }
 
     }
 

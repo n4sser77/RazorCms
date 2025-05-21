@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorCms.Data;
 using RazorCms.DTOs;
+using System.Security.Claims;
 using System.Text.Json;
 
 namespace RazorCms.Pages
@@ -16,8 +17,13 @@ namespace RazorCms.Pages
 
         public Models.Page Page { get; set; }
         public List<Block> Blocks { get; set; }
+
+
+
+        public string UserId { get; set; }
         public async Task<IActionResult> OnGetAsync(int id)
         {
+            
             if (id == 0)
             {
                 return RedirectToPage("/Index");
@@ -32,17 +38,35 @@ namespace RazorCms.Pages
 
             this.Page = page;
             List<Block> blocks = new List<Block>();
+            bool needsUpdate = false;
             if (!string.IsNullOrEmpty(page.Content))
             {
                 try
                 {
 
                     blocks = JsonSerializer.Deserialize<List<Block>>(page.Content);
+                    foreach (var block in blocks)
+                    {
+                        if (string.IsNullOrEmpty(block.Id))
+                        {
+                            block.Id = Guid.NewGuid().ToString();
+                            needsUpdate = true;
+
+                        }
+
+                    }
+
+                    if (needsUpdate)
+                    {
+                        page.Content = JsonSerializer.Serialize(blocks);
+                        _dbContext.Pages.Update(page);
+                        await _dbContext.SaveChangesAsync();
+                    }
                 }
                 catch (Exception e)
                 {
-                    
-                    
+
+
                 }
             }
 

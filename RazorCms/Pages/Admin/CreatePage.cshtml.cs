@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using RazorCms.Data;
+using System.Security.Claims;
 
 namespace RazorCms.Pages.Admin
 {
-    [Authorize] 
+    [Authorize]
     public class CreatePageModel : PageModel
     {
         private readonly ApplicationDbContext _dbContext;
@@ -21,9 +22,15 @@ namespace RazorCms.Pages.Admin
         //{
 
         //}
-
+        public string UserId { get; set; }
         public async Task<IActionResult> OnPostAsync()
         {
+
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+            {
+                return RedirectToPage("/Account/login");
+            }
             Page.Slug = Page.Title.ToLower().Replace(" ", "-");
 
 
