@@ -13,8 +13,7 @@ namespace RazorCms.DTOs
         public List<Block> Blocks { get; set; }
         [JsonPropertyName("isHidden")]
         public bool IsHidden { get; set; }
-        [JsonPropertyName("Order")]
-        public int OrderIndex { get; set; }
+
         public string UserId { get; set; }
 
     }

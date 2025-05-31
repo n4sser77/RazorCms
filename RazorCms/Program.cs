@@ -86,7 +86,7 @@ app.MapGet("/api/pages/{id}", async (ApplicationDbContext db, int id) =>
         Id = page.Result.Id,
         Title = page.Result.Title,
         IsHidden = page.Result.IsHidden,
-        OrderIndex = page.Result.OrderIndex,
+
         Blocks = blocks,
         UserId = page.Result.UserId
     };
@@ -111,7 +111,7 @@ app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, Applicatio
     {
         Title = pageDto.Title,
         IsHidden = pageDto.IsHidden,
-        OrderIndex = pageDto.OrderIndex,
+
         Content = System.Text.Json.JsonSerializer.Serialize(pageDto.Blocks),
         UserId = pageDto.UserId
 
@@ -155,7 +155,7 @@ app.MapPut("/api/pages/save/", async (RazorCms.DTOs.BatchUpdateDto batchUpdateDt
             blockToUpdate.Text = editedBlock.Text;
             blockToUpdate.Type = editedBlock.Type;
             blockToUpdate.Url = editedBlock.Url;
-            blockToUpdate.Order = editedBlock.Order;
+
 
         }
 
@@ -169,8 +169,23 @@ app.MapPut("/api/pages/save/", async (RazorCms.DTOs.BatchUpdateDto batchUpdateDt
         }
     }
 
-    var jsonContent = JsonSerializer.Serialize<List<Block>>(blocks);
-    page.Content = jsonContent;
+    //compare the page blocks from the update with the current page blocks
+    var blocksJson = JsonSerializer.Serialize(blocks);
+    var batchUpdateJson = JsonSerializer.Serialize(batchUpdateDto.Page.Blocks);
+    if ((blocksJson != batchUpdateJson))
+    {
+
+        page.Content = batchUpdateJson;
+
+    }
+    else
+    {
+        var jsonContent = JsonSerializer.Serialize<List<Block>>(blocks);
+        page.Content = jsonContent;
+    }
+
+
+
     await db.SaveChangesAsync();
     return Results.Ok("Page updated successfully");
 });

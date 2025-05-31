@@ -62,7 +62,7 @@ namespace RazorCms.Pages
                 {
 
                     blocks = JsonSerializer.Deserialize<List<Block>>(page.Content);
-                    var blockOrderIndex = 0;
+                    
                     foreach (var block in blocks)
                     {
                         if (string.IsNullOrEmpty(block.Id))
@@ -72,11 +72,7 @@ namespace RazorCms.Pages
 
                         }
 
-                        if (block.Order == 0)
-                        {
-                            block.Order = blockOrderIndex++;
-                            needsUpdate = true;
-                        }
+                        
 
                     }
 

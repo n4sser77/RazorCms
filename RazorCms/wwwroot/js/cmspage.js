@@ -20,6 +20,8 @@ const pageReq = fetch(`https://localhost:7170/api/pages/${pageId}`)
 
 
 
+
+
 const editor = document.querySelector('#editor');
 const wrappers = document.querySelectorAll('.wrappers');
 
@@ -35,6 +37,17 @@ let draggedBlock;
 
 
 function onEditBlock(blockId, newBlock) {
+
+    let updatedblock = page.blocks.find(b => b.id === blockId);
+    if (!updatedblock) {
+
+        updatedblock = {
+            id: blockId,
+            ...newBlock
+        };
+    }
+
+
     editedBlocks.push({
         id: blockId,
         ...newBlock
@@ -60,9 +73,16 @@ wrappers.forEach((wrapper) => {
 
     wrapper.addEventListener('drop', (e) => {
         e.preventDefault();
+        console.log('Before move:', page.blocks.map(b => b.id));
         if (draggedBlock && draggedBlock !== wrapper) {
-            const draggedIndex = Array.from(editor.children).indexOf(draggedBlock);
-            const targetIndex = Array.from(editor.children).indexOf(wrapper);
+            //const draggedIndex = Array.from(editor.children).indexOf(draggedBlock);
+            //const targetIndex = Array.from(editor.children).indexOf(wrapper);
+
+            const draggedId = draggedBlock.dataset.blockId;
+            const targetId = wrapper.dataset.blockId;
+
+            const draggedIndex = page.blocks.findIndex(b => b.id === draggedId);
+            const targetIndex = page.blocks.findIndex(b => b.id === targetId);
 
             if (draggedIndex < targetIndex) {
                 editor.insertBefore(draggedBlock, wrapper.nextSibling);
@@ -70,7 +90,25 @@ wrappers.forEach((wrapper) => {
                 editor.insertBefore(draggedBlock, wrapper);
             }
 
-            updateOrder();
+
+
+
+            const movedBlock = page.blocks.splice(draggedIndex, 1)[0];
+            page.blocks.splice(targetIndex, 0, movedBlock);
+            // clean empty items
+
+            page.blocks.forEach((b, index) => {
+                //if undefiend or null, remove it
+                if (!b || !b.id) {
+                    page.blocks.splice(index, 1);
+                } else {
+                    b.order = index; // update order
+                }
+            })
+
+            console.log('After move:', page.blocks.map(b => b.id));
+
+
         }
     })
 
@@ -131,6 +169,7 @@ wrappers.forEach((wrapper) => {
                 newElem.src = newBlock.url;
                 newElem.className = "img-fluid mb-1";
 
+
             } else if (blockType === 'header') {
                 newElem = document.createElement('h2');
                 newElem.textContent = newBlock.text;
@@ -164,6 +203,8 @@ wrappers.forEach((wrapper) => {
         if (blockId) {
             deletedBlockIds.push(blockId);
             deleteBtn.closest('.wrappers').remove();
+            page.blocks = page.blocks.filter(b => b.id !== blockId);
+
         }
 
     }
@@ -227,25 +268,13 @@ function addBlock(type) {
 
     editor.appendChild(wrapper);
     addedBlocks.push(block);
+    page.blocks.push(block);
 
 
 }
 
 
 
-function updateOrder() {
-
-    wrappers.forEach((child, i) => {
-        const oldOrder = Number(child.dataset.order);
-        const block = page.blocks.find(b => b.order === oldOrder);
-        if (block) {
-            block.order = i;
-            child.dataset.order = 1;
-            editedBlocks.push(block);
-        }
-        console.log(page.blocks);
-    })
-}
 
 
 
@@ -253,6 +282,7 @@ async function saveChanges() {
     console.log('saving...')
     const payload = {
         pageId: document.getElementById('page-meta').dataset.pageId,
+        page: page,
         editedBlocks: editedBlocks,
         deletedBlockIds: deletedBlockIds,
         addedBlocks: addedBlocks
