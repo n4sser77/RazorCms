@@ -10,11 +10,10 @@
     <label asp-for="Page.Title">Page title</label>
     <input class="form-control" id="page-title" type="text" value="@Model.Page.Title" />
 
-    <label asp-for="Page.Slug">Page Slug</label>
-    <input class="form-control" id="page-slug" type="text" value="@Model.Page.Slug" />
+
 
     <label asp-for="Page.IsHidden">Hide</label>
-    <input id="page-visible" type="checkbox" @(Model.Page.IsHidden ? "checked" : "") />
+    <input id="isPageHidden" type="checkbox" @(Model.Page.IsHidden ? "checked" : "") />
     <input id="userId" value="@Model.UserId" type="hidden" />
 </div>
 
@@ -23,138 +22,17 @@
 <h4>Page Content</h4>
 
 <div class="mb-3">
-    <button class="btn btn-outline-primary" type="button" onclick="addBlock('text')">Add Text</button>
-    <button class="btn btn-outline-primary" type="button" onclick="addBlock('header')">Add Header</button>
-    <button class="btn btn-outline-primary" type="button" onclick="addBlock('image')">Add Image</button>
+    <button type="button" class="btn btn-outline-primary" data-add-block="text">Add Text</button>
+    <button type="button" class="btn btn-outline-primary" data-add-block="header">Add Header</button>
+    <button type="button" class="btn btn-outline-primary" data-add-block="image">Add Image</button>
 </div>
 
 <div id="editor" class="border p-3 mb-3" style="min-height: 300px;"></div>
 
 <div class="text-center">
-    <button type="button" class="btn btn-success" onclick="savePage()">Save Page</button>
+    <button type="button" id="saveBtn" class="btn btn-success">Save Page</button>
 </div>
 
 @section Scripts {
-    <script>
-        const editor = document.getElementById('editor');
-        const blocks = [];
-        let count = 0;
-        // store the dragged item-block
-        let draggedBlock;
-
-        function addBlock(type) {
-            //init the block obj with element type and order num
-            const block = { type, order: count++ };
-            const wrapper = document.createElement('div');
-            wrapper.className = "mb-2 p-2 border";
-            wrapper.draggable = true;
-            // essential to know the old order after dropping and chagning order
-            wrapper.dataset.order = block.order;
-
-            wrapper.addEventListener('dragstart', () => {
-                draggedBlock = wrapper;
-            });
-
-            wrapper.addEventListener('dragover', (e) => {
-                e.preventDefault();
-            });
-
-            wrapper.addEventListener('drop', (e) => {
-                e.preventDefault();
-                if (draggedBlock && draggedBlock !== wrapper) {
-                    // Array.from() returns an array from a collection
-                    // such as htmlElementCollection (editior.children)
-                    const draggedIndex = Array.from(editor.children).indexOf(draggedBlock);
-                    const targetIndex = Array.from(editor.children).indexOf(wrapper);
-
-                    if (draggedIndex < targetIndex) {
-                        editor.insertBefore(draggedBlock, wrapper.nextSibling);
-                    } else {
-                        editor.insertBefore(draggedBlock, wrapper);
-                    }
-
-                    updateOrder();
-                }
-            });
-
-            if (type === 'text') {
-                block.text = '';
-                const textarea = document.createElement('textarea');
-                textarea.className = "form-control";
-                textarea.placeholder = "Text block...";
-                textarea.oninput = () => block.text = textarea.value;
-                wrapper.appendChild(textarea);
-            } else if (type === 'header') {
-                block.text = '';
-                const input = document.createElement('input');
-                input.className = "form-control";
-                input.style.fontSize = '20px';
-                input.placeholder = "Header text...";
-                input.oninput = () => block.text = input.value;
-                wrapper.appendChild(input);
-
-            } else if (type === 'image') {
-                block.url = '';
-                const input = document.createElement('input');
-                input.className = "form-control";
-                input.placeholder = "Image URL...";
-                input.oninput = () => block.url = input.value;
-                wrapper.appendChild(input);
-            }
-
-            const removeBtn = document.createElement('button');
-            removeBtn.innerText = "Remove";
-            removeBtn.className = "btn btn-danger btn-sm mt-2";
-            removeBtn.onclick = () => {
-                editor.removeChild(wrapper);
-                const index = blocks.findIndex(b => b.order == block.order);
-                if (index > -1) blocks.splice(index, 1);
-                updateOrder();
-            };
-            wrapper.appendChild(removeBtn);
-
-            editor.appendChild(wrapper);
-            blocks.push(block);
-        }
-
-         function updateOrder() {
-            const children = Array.from(editor.children);
-            children.forEach((child, i) => {
-                const oldOrder = Number(child.dataset.order); // store before overwriting
-                const block = blocks.find(b => b.order === oldOrder);
-                if (block) {
-                    block.order = i;
-                    child.dataset.order = i;
-                }
-            });
-        }
-
-
-        async function savePage() {
-            const payload = {
-                title: document.getElementById('page-title').value,
-                slug: document.getElementById('page-slug').value,
-                isVisible: document.getElementById('page-visible').checked,
-                blocks: Array.from(editor.children).map(child => {
-                    const order = parseInt(child.dataset.order);
-                    return blocks.find(b => b.order == order);
-                }),
-                userId: document.getElementById('userId').value
-            };
-
-            const res = await fetch('https://localhost:7170/api/pages/save/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (res.ok) {
-                alert("Page saved!");
-                location.reload();
-            } else {
-                alert("Failed to save page");
-                console.log(payload);
-            }
-        }
-    </script>
+    <script type="module" src="~/js/createPage.js"></script>
 }

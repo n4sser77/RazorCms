@@ -10,20 +10,27 @@ namespace RazorCms.Pages
     public class CmsPageModel : PageModel
     {
         private readonly ApplicationDbContext _dbContext;
-        public CmsPageModel(ApplicationDbContext dbContext)
+        private readonly IVisitorTrackingService _userTracker;
+        public CmsPageModel(ApplicationDbContext dbContext, IVisitorTrackingService trackingService)
         {
             _dbContext = dbContext;
+            _userTracker = trackingService;
         }
 
         public Models.Page Page { get; set; }
         public List<Block> Blocks { get; set; }
 
 
-
         public string UserId { get; set; }
-        public async Task<IActionResult> OnGetAsync(int id)
+        public bool IsEditing { get; set; } = false;
+        public async Task<IActionResult> OnGetAsync(int id, string action)
         {
-            
+
+            if (action == "edit")
+            {
+                IsEditing = true;
+            }
+
             if (id == 0)
             {
                 return RedirectToPage("/Index");
@@ -38,6 +45,16 @@ namespace RazorCms.Pages
 
             this.Page = page;
             List<Block> blocks = new List<Block>();
+            string pageUrl = $"/{page.Id}";
+            string visitorIdentifier = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "anonymous";
+            //track user visit
+            await _userTracker.RecordVisitAsync(
+                visitorIdentifier,
+                pageUrl,
+                Request.Headers["User-Agent"].ToString(),
+                Request.Headers["Referer"].ToString()
+            );
+
             bool needsUpdate = false;
             if (!string.IsNullOrEmpty(page.Content))
             {
@@ -45,6 +62,7 @@ namespace RazorCms.Pages
                 {
 
                     blocks = JsonSerializer.Deserialize<List<Block>>(page.Content);
+                    var blockOrderIndex = 0;
                     foreach (var block in blocks)
                     {
                         if (string.IsNullOrEmpty(block.Id))
@@ -52,6 +70,12 @@ namespace RazorCms.Pages
                             block.Id = Guid.NewGuid().ToString();
                             needsUpdate = true;
 
+                        }
+
+                        if (block.Order == 0)
+                        {
+                            block.Order = blockOrderIndex++;
+                            needsUpdate = true;
                         }
 
                     }
@@ -66,7 +90,7 @@ namespace RazorCms.Pages
                 catch (Exception e)
                 {
 
-
+                    Console.WriteLine(e.Message);
                 }
             }
 

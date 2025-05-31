@@ -28,13 +28,18 @@ builder.Services.AddAuthentication("Cookies")
 builder.Services.AddAuthorization();
 
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ??
+                    throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+     options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+        .AddEntityFrameworkStores<ApplicationDbContext>();
+
+builder.Services.AddScoped<IVisitorTrackingService, VisitorTrackingService>();
+
 builder.Services.AddRazorPages();
 
 var app = builder.Build();
@@ -62,8 +67,32 @@ app.MapStaticAssets();
 app.MapRazorPages()
    .WithStaticAssets();
 
-app.MapGet("/api/pages/", () =>
- "Hello pages!");
+app.MapGet("/api/pages/{id}", async (ApplicationDbContext db, int id) =>
+{
+    var page = db.Pages.FindAsync(id);
+    if (page == null) return Results.NotFound("Page not found");
+    var blocks = new List<Block>();
+    try
+    {
+        blocks = JsonSerializer.Deserialize<List<Block>>(page.Result.Content);
+    }
+    catch (Exception e)
+    {
+        blocks = new List<Block>();
+    }
+
+    var pageDto = new RazorCms.DTOs.PageDto()
+    {
+        Id = page.Result.Id,
+        Title = page.Result.Title,
+        IsHidden = page.Result.IsHidden,
+        OrderIndex = page.Result.OrderIndex,
+        Blocks = blocks,
+        UserId = page.Result.UserId
+    };
+
+    return Results.Ok(pageDto);
+});
 
 app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, ApplicationDbContext db) =>
 {
@@ -73,16 +102,14 @@ app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, Applicatio
     if (string.IsNullOrEmpty(pageDto.Title))
         return Results.BadRequest("Page title cannot be empty");
 
-    if (string.IsNullOrEmpty(pageDto.Slug))
-        return Results.BadRequest("Page slug cannot be empty");
+
 
     if (pageDto.Blocks.Count < 1)
         return Results.BadRequest("Page content cannot be empty");
-    
+
     var page = new RazorCms.Models.Page()
     {
         Title = pageDto.Title,
-        Slug = pageDto.Slug,
         IsHidden = pageDto.IsHidden,
         OrderIndex = pageDto.OrderIndex,
         Content = System.Text.Json.JsonSerializer.Serialize(pageDto.Blocks),
@@ -114,6 +141,11 @@ app.MapPut("/api/pages/save/", async (RazorCms.DTOs.BatchUpdateDto batchUpdateDt
         blocks = new List<Block>();
     }
 
+    foreach (var addedBlocks in batchUpdateDto.AddedBlocks)
+    {
+        blocks.Add(addedBlocks);
+    }
+
 
     foreach (var editedBlock in batchUpdateDto.EditedBlocks)
     {
@@ -128,7 +160,7 @@ app.MapPut("/api/pages/save/", async (RazorCms.DTOs.BatchUpdateDto batchUpdateDt
         }
 
     }
-    foreach(var deletedBlockId in batchUpdateDto.DeletedBlockIds)
+    foreach (var deletedBlockId in batchUpdateDto.DeletedBlockIds)
     {
         var blockToDelete = blocks.FirstOrDefault(b => b.Id == deletedBlockId);
         if (blockToDelete != null)

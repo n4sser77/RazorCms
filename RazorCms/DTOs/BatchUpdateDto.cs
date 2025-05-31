@@ -10,4 +10,6 @@ public class BatchUpdateDto
     public List<Block> EditedBlocks { get; set; }
     [JsonPropertyName("deletedBlockIds")]
     public List<string> DeletedBlockIds { get; set; }
+    [JsonPropertyName("addedBlocks")]
+    public List<Block> AddedBlocks { get; set; }
 }

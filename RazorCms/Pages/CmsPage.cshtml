@@ -1,10 +1,8 @@
 ﻿@page
 @model RazorCms.Pages.CmsPageModel
 @{
-
     var title = Model?.Page.Title ?? "Page Not Found";
     var pageId = Model?.Page.Id ?? 0;
-
     ViewData["Title"] = title;
     ViewData["PageId"] = pageId;
 }
@@ -17,187 +15,78 @@
 @if (Model.Blocks == null && Model.Blocks.Count > 0)
 {
     <div class="mb-3">
-        <h4>Page is empty</h4>
-    </div>
-}
-
-<div id="page-meta" data-page-id="@ViewData["PageId"]"></div>
-
-@foreach (var block in Model?.Blocks)
-{
-    <div class=" wrappers position-relative mb-2 p-2 border ">
-
         @if (User.Identity.IsAuthenticated)
         {
 
-            <div class="d-flex flex-row-reverse bd-highlight position-absolute end-0">
-
-                <button data-block-id="@block.Id" class="btn btn-primary btn-sm d-none edit-btn">
-                    Edit
-                </button>
-                <button data-block-id="@block.Id" class="btn btn-danger btn-sm d-none delete-btn">
-                    Delete
-                </button>
+            <div>
+                <button type="button" class="btn btn-outline-primary" data-add-block="text">Add Text</button>
+                <button type="button" class="btn btn-outline-primary" data-add-block="header">Add Header</button>
+                <button type="button" class="btn btn-outline-primary" data-add-block="image">Add Image</button>
             </div>
         }
+        <h4>Page is empty</h4>
 
-        @if (block.Type == "text")
-        {
-            <p>@block.Text</p>
-        }
-        else if (block.Type == "header")
-        {
-            <h2>@block.Text</h2>
-        }
-        else if (block.Type == "image")
-        {
-            <img src="@block.Url" alt="Image" class="img-fluid mb-1" />
-        }
     </div>
 }
-<button id="saveBtn" class="btn btn-outline-primary">Save changes</button>
+
+<div id="page-meta" data-page-id="@ViewData["PageId"]">
+</div>
+<div id="editor" class="mb-3">
+    @if (User.Identity.IsAuthenticated && Model.IsEditing)
+    {
+
+        <button type="button" class="btn btn-outline-primary" data-add-block="text">Add Text</button>
+        <button type="button" class="btn btn-outline-primary" data-add-block="header">Add Header</button>
+        <button type="button" class="btn btn-outline-primary" data-add-block="image">Add Image</button>
+    }
+    @{
+        int blockIndex = 0;
+    }
+    @foreach (var block in Model?.Blocks)
+    {
+        <div data-block-id="@block.Id" data-order="@(blockIndex++)" class=" wrappers position-relative mb-2 p-2 container-fluid px-4 ">
+
+            @if (User.Identity.IsAuthenticated && Model.IsEditing)
+            {
+
+                <div class="d-flex flex-row-reverse bd-highlight position-absolute end-0">
+
+                    <button data-block-id="@block.Id" class="btn btn-primary btn-sm d-none edit-btn">
+                        Edit
+                    </button>
+                    <button data-block-id="@block.Id" class="btn btn-danger btn-sm d-none delete-btn">
+                        Delete
+                    </button>
+                </div>
+            }
+
+            @if (block.Type == "text")
+            {
+                <p>@block.Text</p>
+            }
+            else if (block.Type == "header")
+            {
+                <h2>@block.Text</h2>
+            }
+            else if (block.Type == "img")
+            {
+                <img src="@block.Url" alt="Image" class="img-fluid mb-1" />
+            }
+        </div>
+    }
+</div>
+@if (User.Identity.IsAuthenticated && Model.IsEditing)
+{
+
+    <button id="saveBtn" class="btn btn-outline-primary">Save changes</button>
+}
+
 
 @section Scripts {
-    <script>
-        const saveBtn = document.getElementById('saveBtn');
-        saveBtn.onclick = saveChanges;
-        const wrappers = document.querySelectorAll('.wrappers');
-
-        const editedBlocks = [];
-        const deletedBlockIds = [];
-
-        function onEditBlock(blockId, newBlock){
-            editedBlocks.push({
-                id: blockId,
-                 ...newBlock
-            });
-        }
 
 
-        wrappers.forEach((wrapper) => {
-            const editBtn = wrapper.querySelector(".edit-btn");
-            const deleteBtn = wrapper.querySelector(".delete-btn");
-            if(!editBtn || !deleteBtn ){
-                return;
-            }
-            // add onclick to btns to handle the btn clicks
-            // here
-            editBtn.onclick = (e) => {
-                const wrapper = editBtn.closest('.wrappers');
-                const blockId = editBtn.dataset.blockId;
-                // Find the content element (e.g., p, h2, img)
-                let contentElem = wrapper.querySelector('p, h2, img');
-                let blockType = contentElem.tagName.toLowerCase();
-
-                // Only allow one edit at a time per block
-                if (wrapper.querySelector('.edit-controls')) return;
-
-                let input;
-                if (blockType === 'p' || blockType === 'h2') {
-                    input = document.createElement(blockType === 'p' ? 'textarea' : 'input');
-                    input.className = "form-control mb-2";
-                    input.value = contentElem.textContent;
-                } else if (blockType === 'img') {
-                    input = document.createElement('input');
-                    input.type = 'text';
-                    input.className = "form-control mb-2";
-                    input.value = contentElem.src;
-                }
-
-                // Replace content with input
-                contentElem.replaceWith(input);
-
-                // Add Save/Cancel controls
-                const controls = document.createElement('div');
-                controls.className = 'edit-controls mt-2';
-                controls.innerHTML = `
-                    <button class="btn btn-success btn-sm me-2">Save</button>
-                    <button class="btn btn-secondary btn-sm">Cancel</button>
-                `;
-                input.after(controls);
-
-                // Save handler
-                controls.querySelector('.btn-success').onclick = () => {
-                    let newBlock = {};
-                    if (blockType === 'p' || blockType === 'h2') {
-                        newBlock.text = input.value;
-                    } else if (blockType === 'img') {
-                        newBlock.url = input.value;
-                    }
-                    // Update DOM
-                    const newElem = document.createElement(blockType);
-                    if (blockType === 'img') {
-                        newElem.src = newBlock.url;
-                        newElem.className = "img-fluid mb-1";
-                    } else {
-                        newElem.textContent = newBlock.text;
-                    }
-                    input.replaceWith(newElem);
-                    controls.remove();
-
-                    // Track the edit for API
-                    onEditBlock(blockId, { type: blockType === 'h2' ? 'header' : blockType, ...newBlock });
-                };
-
-                // Cancel handler
-                controls.querySelector('.btn-secondary').onclick = () => {
-                    input.replaceWith(contentElem);
-                    controls.remove();
-                };
-            }
-
-            deleteBtn.onclick = () => {
-                const confirmed = confirm("Are you sure?")
-                if(!confirmed){
-                    return;
-                }
-
-                //get block id to remove
-                const blockId = deleteBtn.dataset.blockId;
-                if(blockId ){
-                    deletedBlockIds.push(blockId);
-                    deleteBtn.closest('.wrappers').remove();
-                }
-
-            }
-
-        wrapper.addEventListener('mouseenter', () => {
-            editBtn.classList.remove('d-none');
-            deleteBtn.classList.remove('d-none');
-        });
-
-        wrapper.addEventListener('mouseleave', () => {
-            editBtn.classList.add('d-none');
-            deleteBtn.classList.add('d-none');
-        })
+    <script type="module" src="~/js/cmspage.js"></script>
 
 
-        });
 
-        async function saveChanges(){
-            console.log('saving...')
-            const payload = {
-                pageId: document.getElementById('page-meta').dataset.pageId,
-                editedBlocks: editedBlocks,
-                deletedBlockIds: deletedBlockIds
-            };
-            console.log(payload);
-
-            const res = await fetch('https://localhost:7170/api/pages/save/', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if(res.ok){
-                alert("Changes saved successfully!");
-                editedBlocks.length = 0;
-                deletedBlockIds.length = 0;
-            } else {
-                    alert("Failed to save changes. Please try again.");
-                }
-        }
-
-
-    </script>
 }

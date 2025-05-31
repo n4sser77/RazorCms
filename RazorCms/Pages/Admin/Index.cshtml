@@ -1,23 +1,44 @@
 ﻿@page
 @model RazorCms.Pages.Admin.IndexModel
 @inject RazorCms.Data.ApplicationDbContext DbContext
-
 @{
     ViewData["Title"] = "Admin";
     var pages = DbContext.Pages.OrderBy(p => p.OrderIndex).ToList();
+
+
 }
 
 <h1>Control Panel</h1>
 
-<ul>
-    @foreach (var page in pages)
-    {
-        <li>
-            <a asp-page="/Admin/EditPage" asp-route-id="@(page.Id)">@(page.Title)</a>
-            <a asp-page="/Admin/DeletePage" asp-route-id="@(page.Id)">Delete</a>
-            <a asp-page="/CmsPage" asp-route-id="@(page.Id)">View</a>
-        </li>
-    }
-</ul>
 
-<a asp-page="/Admin/CreatePage">Create New Page</a>
+@foreach (var page in pages)
+{
+
+
+
+    <div class="card p-3">
+        <h2 class="card-title">@(page.Title)</h2>
+        <div class="card-body">
+            <div class="btn-group card-group w-25 ">
+
+                <a class="btn btn-light " asp-page="/CmsPage" asp-route-action="view" asp-route-id="@(page.Id)">View</a>
+                <a class="btn btn-dark" asp-page="/CmsPage" asp-route-action="edit" asp-route-id="@(page.Id)">Edit</a>
+                <form method="post">
+                    <input type="hidden" asp-for="PageId" value="@(page.Id)" />
+                    <button type="submit" class="btn rounded-0 btn-danger">Delete</button>
+                </form>
+            </div>
+
+            <div class="card-footer card-subtitle">
+                Total visitors:
+                <p>
+                    @Model.TotalVisitors[$"/{page.Id}"]
+                </p>
+            </div>
+        </div>
+
+    </div>
+}
+
+
+<a class="btn btn-outline-primary" asp-page="/Admin/CreatePage">Create New Page</a>

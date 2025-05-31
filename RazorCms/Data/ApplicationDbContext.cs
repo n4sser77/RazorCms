@@ -11,5 +11,6 @@ namespace RazorCms.Data
         }
 
         public DbSet<Models.Page> Pages { get; set; }
+        public DbSet<Models.VisitLog> VisitLogs { get; set; }
     }
 }

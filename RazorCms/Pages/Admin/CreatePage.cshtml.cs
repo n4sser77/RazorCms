@@ -31,7 +31,7 @@ namespace RazorCms.Pages.Admin
             {
                 return RedirectToPage("/Account/login");
             }
-            Page.Slug = Page.Title.ToLower().Replace(" ", "-");
+
 
 
             if (!ModelState.IsValid)
