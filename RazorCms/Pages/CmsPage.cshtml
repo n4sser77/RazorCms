@@ -38,6 +38,7 @@
         <button type="button" class="btn btn-outline-primary" data-add-block="text">Add Text</button>
         <button type="button" class="btn btn-outline-primary" data-add-block="header">Add Header</button>
         <button type="button" class="btn btn-outline-primary" data-add-block="image">Add Image</button>
+        <button type="button" class="btn btn-outline-primary" data-add-block="link">Add link</button>
     }
     @{
         int blockIndex = 0;
@@ -62,15 +63,19 @@
 
             @if (block.Type == "text")
             {
-                <p>@block.Text</p>
+                <p style="color: @block.Color;">@block.Text</p>
             }
             else if (block.Type == "header")
             {
-                <h2>@block.Text</h2>
+                <h2 style="color: @block.Color;">@block.Text</h2>
             }
             else if (block.Type == "img")
             {
-                <img src="@block.Url" alt="Image" class="img-fluid mb-1" />
+                <img src="@block.Url" alt="Image" class="img-fluid mb-1 " style="color: @block.Color;" />
+            }
+            else if (block.Type == "link")
+            {
+                <a href="@block.Url" style="color: @block.Color;">@block.Text</a>
             }
         </div>
     }
@@ -84,9 +89,7 @@
 
 @section Scripts {
 
-
     <script type="module" src="~/js/cmspage.js"></script>
-
-
+    
 
 }

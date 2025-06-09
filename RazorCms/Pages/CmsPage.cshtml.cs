@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.EntityFrameworkCore;
 using RazorCms.Data;
 using RazorCms.DTOs;
 using System.Security.Claims;
@@ -25,6 +26,8 @@ namespace RazorCms.Pages
         public bool IsEditing { get; set; } = false;
         public async Task<IActionResult> OnGetAsync(int id, string action)
         {
+            var pages = await _dbContext.Pages.ToListAsync();
+
 
             if (action == "edit")
             {
@@ -62,17 +65,15 @@ namespace RazorCms.Pages
                 {
 
                     blocks = JsonSerializer.Deserialize<List<Block>>(page.Content);
-                    
+
                     foreach (var block in blocks)
                     {
+                        // Ensure each block has a unique ID if no ID exists
                         if (string.IsNullOrEmpty(block.Id))
                         {
                             block.Id = Guid.NewGuid().ToString();
                             needsUpdate = true;
-
                         }
-
-                        
 
                     }
 
@@ -85,7 +86,6 @@ namespace RazorCms.Pages
                 }
                 catch (Exception e)
                 {
-
                     Console.WriteLine(e.Message);
                 }
             }

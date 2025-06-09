@@ -69,6 +69,19 @@ function addBlock(type) {
         input.placeholder = "Image URL...";
         input.oninput = () => block.url = input.value;
         wrapper.appendChild(input);
+    } else if (type === 'link') {
+        block.url = '';
+        block.text = '';
+        const urlInput = document.createElement('input');
+        urlInput.className = "form-control mb-2";
+        urlInput.placeholder = "Link URL...";
+        urlInput.oninput = () => block.url = urlInput.value;
+        wrapper.appendChild(urlInput);
+        const textInput = document.createElement('input');
+        textInput.className = "form-control";
+        textInput.placeholder = "Link text...";
+        textInput.oninput = () => block.text = textInput.value;
+        wrapper.appendChild(textInput);
     }
 
     const removeBtn = document.createElement('button');

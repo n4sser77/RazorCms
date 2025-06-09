@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 using RazorCms.Data;
 using RazorCms.DTOs;
+using RazorCms.Helpers;
 using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -111,11 +112,12 @@ app.MapPost("/api/pages/save/", async (RazorCms.DTOs.PageDto pageDto, Applicatio
     {
         Title = pageDto.Title,
         IsHidden = pageDto.IsHidden,
-
         Content = System.Text.Json.JsonSerializer.Serialize(pageDto.Blocks),
         UserId = pageDto.UserId
 
     };
+
+    await PageHelper.AssignNextOrderIndexAsync(page, db);
 
     db.Add(page);
     await db.SaveChangesAsync();
@@ -155,8 +157,7 @@ app.MapPut("/api/pages/save/", async (RazorCms.DTOs.BatchUpdateDto batchUpdateDt
             blockToUpdate.Text = editedBlock.Text;
             blockToUpdate.Type = editedBlock.Type;
             blockToUpdate.Url = editedBlock.Url;
-
-
+            blockToUpdate.Color = editedBlock.Color;
         }
 
     }

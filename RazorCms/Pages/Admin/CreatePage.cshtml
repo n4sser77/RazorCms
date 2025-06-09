@@ -15,6 +15,7 @@
     <label asp-for="Page.IsHidden">Hide</label>
     <input id="isPageHidden" type="checkbox" @(Model.Page.IsHidden ? "checked" : "") />
     <input id="userId" value="@Model.UserId" type="hidden" />
+
 </div>
 
 <hr />
@@ -25,6 +26,7 @@
     <button type="button" class="btn btn-outline-primary" data-add-block="text">Add Text</button>
     <button type="button" class="btn btn-outline-primary" data-add-block="header">Add Header</button>
     <button type="button" class="btn btn-outline-primary" data-add-block="image">Add Image</button>
+    <button type="button" class="btn btn-outline-primary" data-add-block="link">Add Link</button>
 </div>
 
 <div id="editor" class="border p-3 mb-3" style="min-height: 300px;"></div>

@@ -1,6 +1,7 @@
 ﻿
 
 using Microsoft.AspNetCore.Identity;
+using RazorCms.Data;
 using System.Text.Json.Serialization;
 
 namespace RazorCms.Models
@@ -26,6 +27,27 @@ namespace RazorCms.Models
         public string UserId { get; set; }
 
 
+    }
 
+
+
+
+}
+
+
+
+namespace RazorCms.Helpers
+{
+    public static class PageHelper
+    {
+        public static async Task AssignNextOrderIndexAsync(Models.Page page, ApplicationDbContext context)
+        {
+            // Count current pages in DB
+            int pageCount =  context.Pages.Count();
+
+            // Set the next order index
+            page.OrderIndex = pageCount;
+        }
     }
 }
+

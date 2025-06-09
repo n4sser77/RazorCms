@@ -15,6 +15,13 @@ const pageReq = fetch(`https://localhost:7170/api/pages/${pageId}`)
     .then(data => {
         console.log(data);
         page = data;
+        wrappers.forEach((wrapper) => {
+            let block = page.blocks.find((b) => b.id == wrapper.dataset.blockId);
+            if (block) {
+
+                wrapper.style.color = block.color;
+            }
+        })
     })
     .catch(error => console.error('Fetch error:', error));
 
@@ -39,12 +46,11 @@ let draggedBlock;
 function onEditBlock(blockId, newBlock) {
 
     let updatedblock = page.blocks.find(b => b.id === blockId);
-    if (!updatedblock) {
+    if (updatedblock) {
 
-        updatedblock = {
-            id: blockId,
-            ...newBlock
-        };
+        Object.assign(updatedblock, newBlock);
+        console.log("updatedblock: ", updatedblock);
+        console.log("entire page model: ", page);
     }
 
 
@@ -115,22 +121,25 @@ wrappers.forEach((wrapper) => {
     // add onclick to btns to handle the btn clicks
     // here
     editBtn.onclick = () => {
+        let newColor;
 
         const wrapper = editBtn.closest('.wrappers');
         const blockId = editBtn.dataset.blockId;
         // Find the content element (e.g., p, h2, img)
-        let contentElem = wrapper.querySelector('p, h2, img');
+        let contentElem = wrapper.querySelector('p, h2, img, a');
         const tags = contentElem.tagName.toLowerCase()
         let blockType;
         if (tags === 'p' || tags === 'text') blockType = 'text';
         if (tags === 'h2' || tags === 'header') blockType = 'header';
         if (tags === 'image' || tags === 'img') blockType = 'image';
+        if (tags === 'a' || tags === 'link') blockType = 'link';
         /*let blockType = contentElem.tagName.toLowerCase();*/
 
         // Only allow one edit at a time per block
         if (wrapper.querySelector('.edit-controls')) return;
 
         let input;
+        let urlInput;
         if (blockType === 'text' || blockType === 'header') {
             input = document.createElement(blockType === 'text' ? 'textarea' : 'input');
             input.className = "form-control mb-2";
@@ -140,10 +149,24 @@ wrappers.forEach((wrapper) => {
             input.type = 'text';
             input.className = "form-control mb-2";
             input.value = contentElem.src;
+        } else if (blockType === 'link') {
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = "form-control mb-2";
+            input.value = contentElem.textContent
+            urlInput = document.createElement('input');
+            urlInput.type = 'text';
+            urlInput.className = "form-control mb-2";
+            urlInput.value = contentElem.href;
+
         }
 
         // Replace content with input
         contentElem.replaceWith(input);
+
+        if (blockType === 'link') {
+            input.after(urlInput);
+        }
 
         // Add Save/Cancel controls
         const controls = document.createElement('div');
@@ -151,6 +174,7 @@ wrappers.forEach((wrapper) => {
         controls.innerHTML = `
     <button class="btn btn-success btn-sm me-2">Save</button>
     <button class="btn btn-secondary btn-sm">Cancel</button>
+    <input type="color" class="btn color-picker-btn btn-sm me-2">Color</input>
     `;
         input.after(controls);
 
@@ -159,8 +183,13 @@ wrappers.forEach((wrapper) => {
             let newBlock = {};
             if (blockType === 'text' || blockType === 'header') {
                 newBlock.text = input.value;
+                newBlock.color = newColor;
             } else if (blockType === 'image') {
                 newBlock.url = input.value;
+            } else if (blockType === 'link') {
+                newBlock.text = input.value;
+                newBlock.url = urlInput.value;
+                newBlock.color = newColor;
             }
             // Update DOM
             let newElem;
@@ -168,17 +197,25 @@ wrappers.forEach((wrapper) => {
                 newElem = document.createElement('img');
                 newElem.src = newBlock.url;
                 newElem.className = "img-fluid mb-1";
-
-
             } else if (blockType === 'header') {
                 newElem = document.createElement('h2');
                 newElem.textContent = newBlock.text;
+                newElem.style.color = newColor;
             } else if (blockType === 'text') {
                 newElem = document.createElement('p');
                 newElem.textContent = newBlock.text;
+                newElem.style.color = newColor;
+            } else if (blockType === 'link') {
+                newElem = document.createElement('a');
+                newElem.textContent = newBlock.text;
+                newElem.href = newBlock.url;
+                newElem.style.color = newColor;
             }
 
             input.replaceWith(newElem);
+            if (urlInput) {
+                urlInput.remove();
+            }
             controls.remove();
 
             // Track the edit for API
@@ -190,6 +227,12 @@ wrappers.forEach((wrapper) => {
             input.replaceWith(contentElem);
             controls.remove();
         };
+
+        controls.querySelector('.color-picker-btn').onchange = (e) => {
+            newColor = e.target.value;
+            console.log(newColor);
+            input.style.color = newColor;
+        }
     }
 
     deleteBtn.onclick = () => {
@@ -253,6 +296,19 @@ function addBlock(type) {
         input.placeholder = "Image URL...";
         input.oninput = () => block.url = input.value;
         wrapper.appendChild(input);
+    } else if (type === 'link') {
+        block.url = '';
+        block.text = '';
+        const urlInput = document.createElement('input');
+        urlInput.className = "form-control mb-2";
+        urlInput.placeholder = "Link URL...";
+        urlInput.oninput = () => block.url = urlInput.value;
+        wrapper.appendChild(urlInput);
+        const textInput = document.createElement('input');
+        textInput.className = "form-control";
+        textInput.placeholder = "Link text...";
+        textInput.oninput = () => block.text = textInput.value;
+        wrapper.appendChild(textInput);
     }
 
     const removeBtn = document.createElement('button');
@@ -301,6 +357,7 @@ async function saveChanges() {
         deletedBlockIds.length = 0;
     } else {
         alert("Failed to save changes. Please try again.");
+        
     }
 }
 

@@ -8,10 +8,12 @@ public class Block
 
     [JsonPropertyName("type")]
     public string Type { get; set; }
-    
+
     [JsonPropertyName("text")]
     public string? Text { get; set; }
     [JsonPropertyName("url")]
     public string? Url { get; set; }
+    [JsonPropertyName("color")]
+    public string Color { get; set; }
 }
 
